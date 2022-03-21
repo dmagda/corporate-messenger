@@ -10,25 +10,40 @@ tasks:
     init: npm instal
     command: npm run dev
 
-  - name: profile-service-start-node1
+  - name: profile-service-node1
     before: |
-      yugabyted start --base_dir=$STORE/ybd1 --listen=127.0.0.1
+      yugabyted start --base_dir=$STORE/ybd1 --listen=127.0.0.1 \
+        --tserver-flags="placement_cloud=aws,placement_region=us-west-1,placement_zone=us-west-1a" \
+        --master-flags="placement_cloud=aws,placement_region=us-west-1,placement_zone=us-west-1a" \
       gp sync-done profile-service-node1-ready
-  - name: profile-service-start-node2
+  - name: profile-service-node2
     before: |
       gp sync-await profile-service-node1-ready
-      yugabyted start --base_dir=$STORE/ybd2 --listen=127.0.0.2 --join=127.0.0.1
+      yugabyted start --base_dir=$STORE/ybd2 --listen=127.0.0.2 --join=127.0.0.1 \
+        --tserver-flags="placement_cloud=aws,placement_region=eu-west-1,placement_zone=eu-west-1a" \
+        --master-flags="placement_cloud=aws,placement_region=eu-west-1,placement_zone=eu-west-1a" \
       gp sync-done profile-service-node2-ready
-  - name: profile-service-start-node3
+  - name: profile-service-node3
     before: |
       gp sync-await profile-service-node2-ready
-      yugabyted start --base_dir=$STORE/ybd3 --listen=127.0.0.3 --join=127.0.0.1
+      yugabyted start --base_dir=$STORE/ybd3 --listen=127.0.0.3 --join=127.0.0.1 \
+        --tserver-flags="placement_cloud=aws,placement_region=ap-south-1,placement_zone=ap-south-1a" \
+        --master-flags="placement_cloud=aws,placement_region=ap-south-1,placement_zone=ap-south-1a" \      
       gp sync-done profile-service-node3-ready
   - name: Profile YB Shell
     command: |
       gp sync-await profile-service-node3-ready
+      ysqlsh -f /var/sql_scripts/profile_service_schema.sql
       ysqlsh -h 127.0.0.1
     openMode: split-right   
 
-
-
+ports:
+  - port: 5433
+    visibility: public
+    onOpen: notify
+  - port: 7000
+    visibility: public
+    onOpen: notify
+  - port: 9000
+    visibility: public
+    onOpen: notify    
