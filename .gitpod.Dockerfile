@@ -21,9 +21,6 @@ RUN sudo chown -R $ROLE:$ROLE /var/ybdp \
   && sudo chown -R $ROLE:$ROLE /var/sql_scripts
 
 
-# mounts the project's directory `./data` with SQL scripts
-ADD ./data /var/sql_scripts
-
 # fetch the binary
 RUN curl -sSLo ./yugabyte.tar.gz https://downloads.yugabyte.com/releases/${YB_VERSION}/yugabyte-${YB_VERSION}-b${YB_BUILD}-linux-x86_64.tar.gz \
   && tar -xvf yugabyte.tar.gz -C $YB_BIN_PATH --strip-components=1 \
@@ -32,6 +29,9 @@ RUN curl -sSLo ./yugabyte.tar.gz https://downloads.yugabyte.com/releases/${YB_VE
 
 # configure the interpreter
 RUN ["/usr/local/yugabyte/bin/post_install.sh"]
+
+# mounts the project's directory `./data` with SQL scripts
+ADD ./data /var/sql_scripts
 
 # set the execution path and other env variables
 ENV PATH="$YB_BIN_PATH/bin/:$PATH"
