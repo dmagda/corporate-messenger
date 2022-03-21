@@ -22,11 +22,11 @@ tasks:
   - name: profile-service-start-node3
     before: |
       gp sync-await profile-service-node2-ready
-      yugabyted start -base_dir=$STORE/ybd3 --listen=127.0.0.3 --join=127.0.0.1
+      yugabyted start --base_dir=$STORE/ybd3 --listen=127.0.0.3 --join=127.0.0.1
       gp sync-done profile-service-node3-ready
   - name: Profile YB Shell
     command: |
-      gp await-port profile-service-node3-ready
+      gp sync-await profile-service-node3-ready
       ysqlsh -h 127.0.0.1
     openMode: split-right   
 
