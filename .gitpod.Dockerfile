@@ -13,12 +13,10 @@ ARG ROLE=gitpod
 USER $ROLE
 # create bin and data path
 RUN sudo mkdir -p $YB_BIN_PATH \
-  && sudo mkdir -p /var/ybdp \
-  && sudo mkdir -p /var/sql_scripts
+  && sudo mkdir -p /var/ybdp
 # set permission
 RUN sudo chown -R $ROLE:$ROLE /var/ybdp \
-  && sudo chown -R $ROLE:$ROLE /usr/local/yugabyte \
-  && sudo chown -R $ROLE:$ROLE /var/sql_scripts
+  && sudo chown -R $ROLE:$ROLE /usr/local/yugabyte
 
 
 # fetch the binary
@@ -29,9 +27,6 @@ RUN curl -sSLo ./yugabyte.tar.gz https://downloads.yugabyte.com/releases/${YB_VE
 
 # configure the interpreter
 RUN ["/usr/local/yugabyte/bin/post_install.sh"]
-
-# mounts the project's directory `./data` with SQL scripts
-ADD ./data /var/sql_scripts
 
 # set the execution path and other env variables
 ENV PATH="$YB_BIN_PATH/bin/:$PATH"

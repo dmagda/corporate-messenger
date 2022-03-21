@@ -25,10 +25,6 @@ CREATE TABLESPACE asia_tablespace WITH (
   [{"cloud":"aws","region":"ap-south-1","zone":"ap-south-1a","min_num_replicas":1}]}'
 );
 
-CREATE TABLE User_Asia
-    PARTITION OF User
-    FOR VALUES IN ('India', 'China', 'Japan', 'Australia') TABLESPACE asia_tablespace;  
-
 CREATE TABLE Profile_Americas
     PARTITION OF Profile
     FOR VALUES IN ('USA', 'Canada', 'Mexico', 'Brazil') TABLESPACE americas_tablespace;
@@ -53,4 +49,4 @@ INSERT INTO Profile VALUES
 (9, 'Venkat Sharma', 'vsharma@techmahindra.com', '748234323', 'India', 9),
 (10, 'Prachi Garg', 'pgarg@techmahindra.com', '3823427434', 'India', 10);
 
-ALTER SEQUENCE profile_id_seq INCREMENT BY increment (SELECT max(id) FROM Profile);
+ALTER SEQUENCE profile_id_seq START WITH (SELECT max(id) FROM Profile);
