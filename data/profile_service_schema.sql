@@ -49,4 +49,4 @@ INSERT INTO Profile VALUES
 (9, 'Venkat Sharma', 'vsharma@techmahindra.com', '748234323', 'India', 9),
 (10, 'Prachi Garg', 'pgarg@techmahindra.com', '3823427434', 'India', 10);
 
-ALTER SEQUENCE profile_id_seq START WITH (SELECT max(id) FROM Profile);
+ALTER SEQUENCE profile_id_seq START WITH 11;

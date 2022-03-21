@@ -34,8 +34,7 @@ tasks:
     before: |
       gp sync-await profile-service-node3-ready
       yb-admin -master_addresses 127.0.0.1:7100,127.0.0.2:7100,127.0.0.3:7100 \
-      modify_table_placement_info aws.us-west-1.aws.us-west-1a,aws.eu-west-1.aws.eu-west-1a \
-      aws.ap-south-1.ap-south-1a 3
+      modify_placement_info aws.us-west-1.us-west-1a,aws.eu-west-1.eu-west-1a,aws.ap-south-1.ap-south-1a 3
       gp sync-done profile-service-cluster-ready 
   - name: Profile YB Shell
     command: |
