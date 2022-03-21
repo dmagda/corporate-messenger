@@ -13,22 +13,22 @@ tasks:
   - name: profile-service-node1
     before: |
       yugabyted start --base_dir=$STORE/ybd1 --listen=127.0.0.1 \
-        --tserver-flags="placement_cloud=aws,placement_region=us-west-1,placement_zone=us-west-1a" \
-        --master-flags="placement_cloud=aws,placement_region=us-west-1,placement_zone=us-west-1a" \
+        --tserver_flags="placement_cloud=aws,placement_region=us-west-1,placement_zone=us-west-1a" \
+        --master_flags="placement_cloud=aws,placement_region=us-west-1,placement_zone=us-west-1a" \
       gp sync-done profile-service-node1-ready
   - name: profile-service-node2
     before: |
       gp sync-await profile-service-node1-ready
       yugabyted start --base_dir=$STORE/ybd2 --listen=127.0.0.2 --join=127.0.0.1 \
-        --tserver-flags="placement_cloud=aws,placement_region=eu-west-1,placement_zone=eu-west-1a" \
-        --master-flags="placement_cloud=aws,placement_region=eu-west-1,placement_zone=eu-west-1a" \
+        --tserver_flags="placement_cloud=aws,placement_region=eu-west-1,placement_zone=eu-west-1a" \
+        --master_flags="placement_cloud=aws,placement_region=eu-west-1,placement_zone=eu-west-1a" \
       gp sync-done profile-service-node2-ready
   - name: profile-service-node3
     before: |
       gp sync-await profile-service-node2-ready
       yugabyted start --base_dir=$STORE/ybd3 --listen=127.0.0.3 --join=127.0.0.1 \
-        --tserver-flags="placement_cloud=aws,placement_region=ap-south-1,placement_zone=ap-south-1a" \
-        --master-flags="placement_cloud=aws,placement_region=ap-south-1,placement_zone=ap-south-1a" \      
+        --tserver_flags="placement_cloud=aws,placement_region=ap-south-1,placement_zone=ap-south-1a" \
+        --master_flags="placement_cloud=aws,placement_region=ap-south-1,placement_zone=ap-south-1a" \      
       gp sync-done profile-service-node3-ready
   - name: Profile YB Shell
     command: |
