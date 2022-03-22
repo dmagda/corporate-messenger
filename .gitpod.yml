@@ -7,7 +7,7 @@ image:
 
 tasks:
 
-  - name: geo-distributed-cluster
+  - name: Geo Distributed Cluster
     env: 
       US_REGION_NODE_PLACEMENT_INFO: "placement_cloud=aws,placement_region=us-west-1,placement_zone=us-west-1a"
       EU_REGION_NODE_PLACEMENT_INFO: "placement_cloud=aws,placement_region=eu-west-1,placement_zone=eu-west-1a"
@@ -39,6 +39,7 @@ tasks:
     command: |
       gp sync-await geo-distributed-cluster-ready
       ysqlsh -f /workspace/corporate-messenger/data/profile_service_schema.sql
+      ysqlsh -f /workspace/corporate-messenger/data/messaging_service_schema.sql
       ysqlsh -h 127.0.0.1
     openMode: split-right
 
