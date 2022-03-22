@@ -80,13 +80,13 @@ tasks:
       yugabyted start --base_dir=$STORE/ybd13 --listen=127.0.0.13 --join=127.0.0.10 \
         --tserver_flags=$READ_REPLICA_EU_PLACEMENT_INFO --master_flags=$READ_REPLICA_EU_PLACEMENT_INFO
       yb-admin -master_addresses $PRIMARY_CLUSTER_MASTER_ADDRESSES \
-        add_read_replica_placement_info aws.eu-west-1.eu-west-1a 1 read_replica_eu
+        add_read_replica_placement_info aws.eu-west-1.eu-west-1a:1 1 read_replica_eu
 
       # Starting read-replica clusters for AP:
       yugabyted start --base_dir=$STORE/ybd14 --listen=127.0.0.14 --join=127.0.0.10 \
         --tserver_flags=$READ_REPLICA_AP_PLACEMENT_INFO --master_flags=$READ_REPLICA_AP_PLACEMENT_INFO
       yb-admin -master_addresses $PRIMARY_CLUSTER_MASTER_ADDRESSES \
-        add_read_replica_placement_info aws.ap-south-1.ap-south-1 1 read_replica_ap
+        add_read_replica_placement_info aws.ap-south-1.ap-south-1:1 1 read_replica_ap
   
       gp sync-done cluster-with-read-replicas-ready
 
