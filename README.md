@@ -170,3 +170,11 @@ Send a few messages to the 'apache_kafka_support' channel and read them back:
     JOIN Profile as p ON m.sender_id = p.id -- Global search across all Profiles
     WHERE m.channel_id = 1;
     ```
+
+## Query Cluster With Read Replicas
+
+Check the cluster config:
+
+```shell
+curl -s http://127.0.0.10:7000/cluster-config
+```
