@@ -15,7 +15,7 @@ tasks:
       AP_REGION_ZONE_B_NODE_PLACEMENT_INFO: "placement_cloud=aws,placement_region=ap-south-1,placement_zone=ap-south-1b"
       AP_REGION_ZONE_C_NODE_PLACEMENT_INFO: "placement_cloud=aws,placement_region=ap-south-1,placement_zone=ap-south-1c"
       MODIFY_PLACEMENT_STRING: aws.us-west-1.us-west-1a,aws.eu-west-1.eu-west-1a,aws.ap-south-1.ap-south-1a,aws.ap-south-1.ap-south-1b,aws.ap-south-1.ap-south-1c
-      REPLICATION_FACTOR: 3   
+      REPLICATION_FACTOR: 5   
     command: |
       yugabyted start --base_dir=$STORE/ybd1 --listen=127.0.0.1 \
         --tserver_flags=$US_REGION_NODE_PLACEMENT_INFO --master_flags=$US_REGION_NODE_PLACEMENT_INFO
