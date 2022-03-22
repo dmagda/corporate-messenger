@@ -25,9 +25,9 @@ tasks:
 
       yugabyted start --base_dir=$STORE/ybd3 --listen=127.0.0.3 --join=127.0.0.1 \
         --tserver_flags=$AP_REGION_ZONE_A_NODE_PLACEMENT_INFO --master_flags=$AP_REGION_ZONE_A_NODE_PLACEMENT_INFO
-      yugabyted start --base_dir=$STORE/ybd3 --listen=127.0.0.4 --join=127.0.0.1 \
+      yugabyted start --base_dir=$STORE/ybd4 --listen=127.0.0.4 --join=127.0.0.1 \
         --tserver_flags=$AP_REGION_ZONE_B_NODE_PLACEMENT_INFO --master_flags=$AP_REGION_ZONE_B_NODE_PLACEMENT_INFO
-      yugabyted start --base_dir=$STORE/ybd3 --listen=127.0.0.5 --join=127.0.0.1 \
+      yugabyted start --base_dir=$STORE/ybd5 --listen=127.0.0.5 --join=127.0.0.1 \
         --tserver_flags=$AP_REGION_ZONE_C_NODE_PLACEMENT_INFO --master_flags=$AP_REGION_ZONE_C_NODE_PLACEMENT_INFO
 
       yb-admin -master_addresses 127.0.0.1:7100,127.0.0.2:7100,127.0.0.3:7100,127.0.0.4:7100,127.0.0.5:7100 \
