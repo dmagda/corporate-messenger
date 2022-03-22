@@ -6,50 +6,39 @@ image:
   file: .gitpod.Dockerfile
 
 tasks:
-  - name: Next.js Dev
-    init: npm instal
-    command: npm run dev
 
-  - name: profile-service-node1
-    before: |
+  - name: geo-distributed-cluster
+    command: |
       yugabyted start --base_dir=$STORE/ybd1 --listen=127.0.0.1 \
         --tserver_flags="placement_cloud=aws,placement_region=us-west-1,placement_zone=us-west-1a" \
         --master_flags="placement_cloud=aws,placement_region=us-west-1,placement_zone=us-west-1a"
-      gp sync-done profile-service-node1-ready
-  - name: profile-service-node2
-    before: |
-      gp sync-await profile-service-node1-ready
+      
       yugabyted start --base_dir=$STORE/ybd2 --listen=127.0.0.2 --join=127.0.0.1 \
         --tserver_flags="placement_cloud=aws,placement_region=eu-west-1,placement_zone=eu-west-1a" \
         --master_flags="placement_cloud=aws,placement_region=eu-west-1,placement_zone=eu-west-1a"
-      gp sync-done profile-service-node2-ready
-  - name: profile-service-node3
-    before: |
-      gp sync-await profile-service-node2-ready
+
       yugabyted start --base_dir=$STORE/ybd3 --listen=127.0.0.3 --join=127.0.0.1 \
         --tserver_flags="placement_cloud=aws,placement_region=ap-south-1,placement_zone=ap-south-1a" \
-        --master_flags="placement_cloud=aws,placement_region=ap-south-1,placement_zone=ap-south-1a"      
-      gp sync-done profile-service-node3-ready
-  - name: profile-service-cluster-config
-    before: |
-      gp sync-await profile-service-node3-ready
+        --master_flags="placement_cloud=aws,placement_region=ap-south-1,placement_zone=ap-south-1a"
+
       yb-admin -master_addresses 127.0.0.1:7100,127.0.0.2:7100,127.0.0.3:7100 \
       modify_placement_info aws.us-west-1.us-west-1a,aws.eu-west-1.eu-west-1a,aws.ap-south-1.ap-south-1a 3
-      gp sync-done profile-service-cluster-ready 
-  - name: Profile YB Shell
+
+      gp sync-done geo-distributed-cluster-ready
+
+  - name: Geo Cluster Shell
     command: |
-      gp sync-await profile-service-cluster-ready
+      gp sync-await geo-distributed-cluster-read
       ysqlsh -f /workspace/corporate-messenger/data/profile_service_schema.sql
       ysqlsh -h 127.0.0.1
+    openMode: split-right
+
+  - name: Next.js Server
+    init: npm instal
+    command: npm run dev
     openMode: split-right   
 
 ports:
-  - port: 5433
+  - port: 3000
     visibility: public
     onOpen: notify
-  - port: 7000
-    visibility: public
-    onOpen: notify
-  - port: 9000
-    visibility: public
-    onOpen: notify    
