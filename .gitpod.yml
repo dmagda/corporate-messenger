@@ -11,8 +11,10 @@ tasks:
     env: 
       US_REGION_NODE_PLACEMENT_INFO: "placement_cloud=aws,placement_region=us-west-1,placement_zone=us-west-1a"
       EU_REGION_NODE_PLACEMENT_INFO: "placement_cloud=aws,placement_region=eu-west-1,placement_zone=eu-west-1a"
-      AP_REGION_NODE_PLACEMENT_INFO: "placement_cloud=aws,placement_region=ap-south-1,placement_zone=ap-south-1a"
-      MODIFY_PLACEMENT_STRING: aws.us-west-1.us-west-1a,aws.eu-west-1.eu-west-1a,aws.ap-south-1.ap-south-1a
+      AP_REGION_ZONE_A_NODE_PLACEMENT_INFO: "placement_cloud=aws,placement_region=ap-south-1,placement_zone=ap-south-1a"
+      AP_REGION_ZONE_B_NODE_PLACEMENT_INFO: "placement_cloud=aws,placement_region=ap-south-1,placement_zone=ap-south-1b"
+      AP_REGION_ZONE_C_NODE_PLACEMENT_INFO: "placement_cloud=aws,placement_region=ap-south-1,placement_zone=ap-south-1c"
+      MODIFY_PLACEMENT_STRING: aws.us-west-1.us-west-1a,aws.eu-west-1.eu-west-1a,aws.ap-south-1.ap-south-1a,aws.ap-south-1.ap-south-1b,aws.ap-south-1.ap-south-1c
       REPLICATION_FACTOR: 3   
     command: |
       yugabyted start --base_dir=$STORE/ybd1 --listen=127.0.0.1 \
@@ -22,9 +24,13 @@ tasks:
         --tserver_flags=$EU_REGION_NODE_PLACEMENT_INFO --master_flags=$EU_REGION_NODE_PLACEMENT_INFO
 
       yugabyted start --base_dir=$STORE/ybd3 --listen=127.0.0.3 --join=127.0.0.1 \
-        --tserver_flags=$AP_REGION_NODE_PLACEMENT_INFO --master_flags=$AP_REGION_NODE_PLACEMENT_INFO
+        --tserver_flags=$AP_REGION_ZONE_A_NODE_PLACEMENT_INFO --master_flags=$AP_REGION_ZONE_A_NODE_PLACEMENT_INFO
+      yugabyted start --base_dir=$STORE/ybd3 --listen=127.0.0.4 --join=127.0.0.1 \
+        --tserver_flags=$AP_REGION_ZONE_B_NODE_PLACEMENT_INFO --master_flags=$AP_REGION_ZONE_B_NODE_PLACEMENT_INFO
+      yugabyted start --base_dir=$STORE/ybd3 --listen=127.0.0.5 --join=127.0.0.1 \
+        --tserver_flags=$AP_REGION_ZONE_C_NODE_PLACEMENT_INFO --master_flags=$AP_REGION_ZONE_C_NODE_PLACEMENT_INFO
 
-      yb-admin -master_addresses 127.0.0.1:7100,127.0.0.2:7100,127.0.0.3:7100 \
+      yb-admin -master_addresses 127.0.0.1:7100,127.0.0.2:7100,127.0.0.3:7100,127.0.0.4:7100,127.0.0.5:7100 \
         modify_placement_info $MODIFY_PLACEMENT_STRING $REPLICATION_FACTOR
 
       gp sync-done geo-distributed-cluster-ready
