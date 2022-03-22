@@ -54,8 +54,9 @@ tasks:
       PRIMARY_REGION_B_NODE_PLACEMENT_INFO: "placement_cloud=aws,placement_region=us-west-2,placement_zone=us-west-2a"
       PRIMARY_REGION_C_NODE_PLACEMENT_INFO: "placement_cloud=aws,placement_region=us-east-1,placement_zone=us-east-1a"
 
-      READ_REPLICA_EU_PLACEMENT_INFO: "placement_cloud=aws,placement_region=eu-west-1,placement_zone=eu-west-1a,placement_uuid=read_replica_eu"
-      READ_REPLICA_AP_PLACEMENT_INFO: "placement_cloud=aws,placement_region=ap-south-1,placement_zone=ap-south-1a,placement_uuid=read_replica_ap"
+      # There can be one read replica region added. Otherwise, you'll see an exception like - Unable to add read replica placement info.: Already have a read replica placement, cannot add another.
+      READ_REPLICA_EU_PLACEMENT_INFO: "placement_cloud=aws,placement_region=eu-west-1,placement_zone=eu-west-1a,placement_uuid=read_replica"
+      READ_REPLICA_AP_PLACEMENT_INFO: "placement_cloud=aws,placement_region=ap-south-1,placement_zone=ap-south-1a,placement_uuid=read_replica"
 
       PRIMARY_CLUSTER_MASTER_ADDRESSES: 127.0.0.10:7100,127.0.0.11:7100,127.0.0.12:7100
     command: |
@@ -76,17 +77,14 @@ tasks:
       # Specifying preffered zones:
       yb-admin -master_addresses $PRIMARY_CLUSTER_MASTER_ADDRESSES set_preferred_zones aws.us-west-1.us-west-1a
 
-      # Starting read-replica clusters for EU and adding it to the primary cluster:
+      # Adding read-replica nodes(cluster):
       yugabyted start --base_dir=$STORE/ybd13 --listen=127.0.0.13 --join=127.0.0.10 \
         --tserver_flags=$READ_REPLICA_EU_PLACEMENT_INFO --master_flags=$READ_REPLICA_EU_PLACEMENT_INFO
-      yb-admin -master_addresses $PRIMARY_CLUSTER_MASTER_ADDRESSES \
-        add_read_replica_placement_info aws.eu-west-1.eu-west-1a:1 1 read_replica_eu
-
-      # Starting read-replica clusters for AP:
       yugabyted start --base_dir=$STORE/ybd14 --listen=127.0.0.14 --join=127.0.0.10 \
         --tserver_flags=$READ_REPLICA_AP_PLACEMENT_INFO --master_flags=$READ_REPLICA_AP_PLACEMENT_INFO
+
       yb-admin -master_addresses $PRIMARY_CLUSTER_MASTER_ADDRESSES \
-        add_read_replica_placement_info aws.ap-south-1.ap-south-1:1 1 read_replica_ap
+        add_read_replica_placement_info aws.eu-west-1.eu-west-1a:1,aws.ap-south-1.ap-south-1:1 2 read_replica
   
       gp sync-done cluster-with-read-replicas-ready
 
