@@ -56,3 +56,117 @@ Building a Slack-like corporate messenger with YugabyteDB. The application compr
         </tr>
     </tbody>
 </table>
+
+## Query Geo-Distributed Cluster
+
+The Profile and Messaging services use the same geo-distributed cluster comprised of five nodes by default. See the `Geo Distributed Cluster` task in the `.gitpod.yml` file.
+
+Navigate to the `Geo Cluster Shell; ysqlsh` terminal tab that is opened automatically and execute queries from the following sections.
+
+### Task 1: Geo-Based Data Distribution
+
+```sql
+SELECT * FROM Workspace_Americas;
+SELECT * FROM Workspace_Europe;
+SELECT * FROM Workspace_Asia;
+SELECT * FROM Workspace; 
+```
+
+### Task 2: Get Profiles from Specific Region
+
+```sql
+SELECT w.name, p.full_name, p.email FROM Workspace_Asia as w
+JOIN WorkspaceProfile_Asia as wp ON w.id = wp.workspace_id
+JOIN Profile_Asia as p ON p.id = wp.profile_id; 
+```
+
+### Taks 3: Send Messages Within Regional Boundaries
+
+* Exchnage two messages in the `on_call_customer_support` channel of the `TechMahindra` workspace. Note, that the messages are added through the `Message` table:
+    ```sql
+    INSERT INTO Message (channel_id, sender_id, message, country) VALUES
+    (8, 9, 'Prachi, the customer has a production outage. Could you join the line?', 'India');
+
+    INSERT INTO Message (channel_id, sender_id, message, country) VALUES
+    (8, 10, 'Sure, give me a minute!', 'India');
+    ```
+
+* Confirm the messages are stored in the `Message_Asia` table:
+    ```sql
+    SELECT c.name, p.full_name, m.message FROM Message_Asia as m
+    JOIN Channel_Asia as c ON m.channel_id = c.id
+    JOIN Profile_Asia as p ON m.sender_id = p.id
+    WHERE c.id = 8;
+    ```
+
+* Double check the messages' replica are not stored in other regional tables such as `Message_Americas`:
+    ```sql
+    SELECT c.name, p.full_name, m.message FROM Message_Americas as m
+    JOIN Channel_Americas as c ON m.channel_id = c.id
+    JOIN Profile_Americas as p ON m.sender_id = p.id
+    WHERE c.id = 8;
+    ```
+
+### Task 4: Cross-Regional Queries
+
+It can be the case that a profile is stored in one geo-region but still be able to join a workspace and send messages from another region.
+
+Query profiles belonging to the Apache Software Foundation (ASF) workspace:
+
+* Get all the ASF profiles using a search within the `Americas` region:
+    ```sql
+    SELECT w.name, wp.profile_id, p.full_name, p.email FROM Workspace_Americas as w
+    JOIN WorkspaceProfile_Americas as wp ON w.id = wp.workspace_id
+    LEFT JOIN Profile_Americas as p ON p.id = wp.profile_id
+    WHERE w.id = 1; 
+    ```
+* The `full_name` and `email` columns is empty for two profiles because the profiles are stored in a region differen from `Profile_Americas`:
+    ```sql
+                name            | profile_id |  full_name   |         email         
+    ----------------------------+------------+--------------+-----------------------
+    Apache Software Foundation |          1 | Mark Smith   | msmith@apache.org
+    Apache Software Foundation |          8 | Shoi-ming Li | shoimingli@apache.org
+    Apache Software Foundation |          5 |              | 
+    Apache Software Foundation |          9 |              | 
+    ```
+* To get missing profile's data we need to do a cross-region search by doing a join with the `Profile` table:
+    ```sql
+    SELECT w.name, wp.profile_id, p.full_name, p.email FROM Workspace_Americas as w
+    JOIN WorkspaceProfile_Americas as wp ON w.id = wp.workspace_id
+    LEFT JOIN Profile as p ON p.id = wp.profile_id
+    WHERE w.id = 1; 
+    ```
+* The output is as follows:
+    ```sql
+                name            | profile_id |   full_name   |          email           
+    ----------------------------+------------+---------------+--------------------------
+    Apache Software Foundation |          9 | Venkat Sharma | vsharma@techmahindra.com
+    Apache Software Foundation |          1 | Mark Smith    | msmith@apache.org
+    Apache Software Foundation |          8 | Shoi-ming Li  | shoimingli@apache.org
+    Apache Software Foundation |          5 | Jonas Fischer | jonas_fischer@gmail.com
+    ```
+
+Send a few messages to the 'apache_kafka_support' channel and read them back:
+
+* Insert the messages:
+    ```sql
+    INSERT INTO Message (channel_id, sender_id, message, country) VALUES
+    (1, 5, 'Dear Kafka community, what is the best way to learn Kafka?', 'USA');
+
+    INSERT INTO Message (channel_id, sender_id, message, country) VALUES
+    (1, 8, 'Hi, Jonas! Have you checked Kafka 101 course? The best way to get started.', 'USA');
+
+    INSERT INTO Message (channel_id, sender_id, message, country) VALUES
+    (1, 1, '+1, start with Kafka 101', 'USA');
+    ```
+
+* Read the messages back:
+    ```sql
+    SELECT * FROM Message_Americas WHERE channel_id = 1 ORDER BY sent_at ASC;
+
+    SELECT c.name, c.country as channel_country, p.full_name, p.country as profile_country, m.message, m.sent_at
+    FROM Message_Americas as m
+    JOIN Channel_Americas as c ON m.channel_id = c.id
+    JOIN Profile as p ON m.sender_id = p.id -- Global search across all Profiles
+    WHERE m.channel_id = 1;
+    ```
