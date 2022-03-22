@@ -6,6 +6,10 @@ image:
   file: .gitpod.Dockerfile
 
 tasks:
+  - name: Next.js Server
+    init: npm instal
+    command: npm run dev
+    openMode: split-right 
 
   - name: Geo Distributed Cluster
     env: 
@@ -43,10 +47,22 @@ tasks:
       ysqlsh -h 127.0.0.1
     openMode: split-right
 
-  - name: Next.js Server
-    init: npm instal
-    command: npm run dev
-    openMode: split-right   
+  - name: Reminders Service Cluster
+    command: |
+      gp sync-await geo-distributed-cluster-ready
+      yugabyted start --base_dir=$STORE/ybd10 --listen=127.0.0.10 \
+        --tserver_flags=$US_REGION_NODE_PLACEMENT_INFO --master_flags=$US_REGION_NODE_PLACEMENT_INFO
+
+      yb-admin -master_addresses 127.0.0.10:7100 \
+        modify_placement_info aws.us-west-1.us-west-1a 1
+
+      gp sync-done reminders-service-cluster-ready
+
+  - name: Reminders Service Shell
+    command: |
+      gp sync-await reminders-service-cluster-ready
+      ysqlsh -h 127.0.0.10
+    openMode: split-right                  
 
 ports:
   - port: 3000
