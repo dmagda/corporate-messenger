@@ -6,12 +6,13 @@ image:
   file: .gitpod.Dockerfile
 
 tasks:
+  - name: Set Global Env
   - name: Next.js Server
     init: npm instal
     command: npm run dev
     openMode: split-right 
 
-  - name: Geo Distributed Cluster
+  - name: Cluster#1 (Geo-Distributed)
     env: 
       US_REGION_NODE_PLACEMENT_INFO: "placement_cloud=aws,placement_region=us-west-1,placement_zone=us-west-1a"
       EU_REGION_NODE_PLACEMENT_INFO: "placement_cloud=aws,placement_region=eu-west-1,placement_zone=eu-west-1a"
@@ -39,7 +40,7 @@ tasks:
 
       gp sync-done geo-distributed-cluster-ready
 
-  - name: Geo Cluster Shell
+  - name: Cluster#1 Shell
     command: |
       gp sync-await geo-distributed-cluster-ready
       ysqlsh -f /workspace/corporate-messenger/data/profile_service_schema.sql
@@ -47,22 +48,66 @@ tasks:
       ysqlsh -h 127.0.0.1
     openMode: split-right
 
-  - name: Reminders Service Cluster
+  - name: Cluster#2 (With Read Replicas)
+    env: 
+      PRIMARY_REGION_A_NODE_PLACEMENT_INFO: "placement_cloud=aws,placement_region=us-west-1,placement_zone=us-west-1a"
+      PRIMARY_REGION_B_NODE_PLACEMENT_INFO: "placement_cloud=aws,placement_region=us-west-2,placement_zone=us-west-2a"
+      PRIMARY_REGION_C_NODE_PLACEMENT_INFO: "placement_cloud=aws,placement_region=us-east-1,placement_zone=us-east-1a"
+
+      READ_REPLICA_EU_PLACEMENT_INFO: "placement_cloud=aws,placement_region=eu-west-1,placement_zone=eu-west-1a,placement_uuid=read_replica_eu"
+      READ_REPLICA_AP_PLACEMENT_INFO: "placement_cloud=aws,placement_region=ap-south-1,placement_zone=ap-south-1a,placement_uuid=read_replica_ap"
+
+      PRIMARY_CLUSTER_MASTER_ADDRESSES: 127.0.0.10:7100,127.0.0.11:7100,127.0.0.12:7100
     command: |
       gp sync-await geo-distributed-cluster-ready
+      
+      # Starting a multi-region primary cluster:    
       yugabyted start --base_dir=$STORE/ybd10 --listen=127.0.0.10 \
-        --tserver_flags=$US_REGION_NODE_PLACEMENT_INFO --master_flags=$US_REGION_NODE_PLACEMENT_INFO
+        --tserver_flags=$PRIMARY_REGION_A_NODE_PLACEMENT_INFO --master_flags=$PRIMARY_REGION_A_NODE_PLACEMENT_INFO
+      yugabyted start --base_dir=$STORE/ybd11 --listen=127.0.0.11 --join=127.0.0.10 \
+        --tserver_flags=$PRIMARY_REGION_B_NODE_PLACEMENT_INFO --master_flags=$PRIMARY_REGION_B_NODE_PLACEMENT_INFO
+      yugabyted start --base_dir=$STORE/ybd12 --listen=127.0.0.12 --join=127.0.0.10 \
+        --tserver_flags=$PRIMARY_REGION_C_NODE_PLACEMENT_INFO --master_flags=$PRIMARY_REGION_C_NODE_PLACEMENT_INFO
 
-      yb-admin -master_addresses 127.0.0.10:7100 \
-        modify_placement_info aws.us-west-1.us-west-1a 1
+      # Changing the placement info:
+      yb-admin -master_addresses $PRIMARY_CLUSTER_MASTER_ADDRESSES \
+        modify_placement_info aws.us-west-1.us-west-1a,aws.us-west-2.us-west-2a,aws.us-east-1.us-east-1a 3
 
-      gp sync-done reminders-service-cluster-ready
+      # Specifying preffered zones:
+      yb-admin -master_addresses $PRIMARY_CLUSTER_MASTER_ADDRESSES set_preferred_zones aws.us-west-1.us-west-1a
 
-  - name: Reminders Service Shell
+      # Starting read-replica clusters for EU and adding it to the primary cluster:
+      yugabyted start --base_dir=$STORE/ybd13 --listen=127.0.0.13 --join=127.0.0.10 \
+        --tserver_flags=$READ_REPLICA_EU_PLACEMENT_INFO --master_flags=$READ_REPLICA_EU_PLACEMENT_INFO
+      yb-admin -master_addresses $PRIMARY_CLUSTER_MASTER_ADDRESSES \
+        add_read_replica_placement_info aws.eu-west-1.eu-west-1a 1 read_replica_eu
+
+      # Starting read-replica clusters for AP:
+      yugabyted start --base_dir=$STORE/ybd14 --listen=127.0.0.14 --join=127.0.0.10 \
+        --tserver_flags=$READ_REPLICA_AP_PLACEMENT_INFO --master_flags=$READ_REPLICA_AP_PLACEMENT_INFO
+      yb-admin -master_addresses $PRIMARY_CLUSTER_MASTER_ADDRESSES \
+        add_read_replica_placement_info aws.ap-south-1.ap-south-1 1 read_replica_ap
+  
+      gp sync-done cluster-with-read-replicas-ready
+
+  - name: Cluster#2 Shell (Primary)
     command: |
-      gp sync-await reminders-service-cluster-ready
+      gp sync-await cluster-with-read-replicas-ready
+      ysqlsh -h 127.0.0.10 -f /workspace/corporate-messenger/data/reminders_service_schema.sql
       ysqlsh -h 127.0.0.10
-    openMode: split-right                  
+    openMode: split-right    
+
+  - name: Cluster#2 Shell (Replica EU)
+    command: |
+      gp sync-await cluster-with-read-replicas-ready
+      ysqlsh -h 127.0.0.13
+    openMode: split-right
+
+  - name: Cluster#2 Shell (Replica AP)
+    command: |
+      gp sync-await cluster-with-read-replicas-ready
+      ysqlsh -h 127.0.0.14
+    openMode: split-right
 
 ports:
   - port: 3000
