@@ -181,7 +181,35 @@ Send a few messages to the 'apache_kafka_support' channel and read them back:
 
 ## Query Cluster With Read Replicas
 
-Check the cluster config:
+* Open a terminal tab and connect to the primary cluster with `ysqlsh`:
+    ```shell
+    ysqlsh -h 127.0.0.4
+    ```
+
+* Confirm there are no relations in the cluster:
+    ```shell
+    \d
+    ```
+
+* Open another terminal tab and connect to a read replica node from the European region:
+    ```shell
+    ysqlsh -h 127.0.0.5
+    ```
+
+* Confirm there are no relations as well:
+    ```shell
+    \d
+    ```
+
+* Return to the terminal connected to the primary node and load the Reminder's service schema:
+    ```shell
+    \i /workspace/corporate-messenger/data/reminders_service_schema.sql 
+    ```
+    
+* Confirm the schema was created in the primary cluster and replicated to the read replica:
+    ```shell
+    \d
+    ```
 
 ```shell
 curl -s http://127.0.0.10:7000/cluster-config
