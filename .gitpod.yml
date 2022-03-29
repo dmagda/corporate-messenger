@@ -49,7 +49,7 @@ tasks:
     command: |
       # gp sync-await geo-distributed-cluster-ready
        
-      yb-master --rpc_bind_addresses $PRIMARY_NODE_IP:7100 --fs_data_dirs $STORE/ybd4 --enable_ysql &
+      yb-master -master_addresses $PRIMARY_NODE_IP:7100 --rpc_bind_addresses $PRIMARY_NODE_IP:7100 --fs_data_dirs $STORE/ybd4 --enable_ysql &
 
       yb-admin -master_addresses $PRIMARY_NODE_IP:7100 modify_placement_info aws.us-west-1.us-west-1a 1 $PRIMARY_CLUSTER_UUID
 
