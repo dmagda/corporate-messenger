@@ -21,11 +21,8 @@ CREATE TABLESPACE europe_tablespace WITH (
 );
 
 CREATE TABLESPACE asia_tablespace WITH (
-  replica_placement='{"num_replicas": 3, "placement_blocks":
-  [{"cloud":"aws","region":"ap-south-1","zone":"ap-south-1a","min_num_replicas":1},
-   {"cloud":"aws","region":"ap-south-1","zone":"ap-south-1b","min_num_replicas":1},
-   {"cloud":"aws","region":"ap-south-1","zone":"ap-south-1c","min_num_replicas":1} 
-  ]}'
+  replica_placement='{"num_replicas": 1, "placement_blocks":
+  [{"cloud":"aws","region":"ap-south-1","zone":"ap-south-1a","min_num_replicas":1}]}'
 );
 
 CREATE TABLE Profile_Americas
