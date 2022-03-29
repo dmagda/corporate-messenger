@@ -59,9 +59,17 @@ Building a Slack-like corporate messenger with YugabyteDB. The application compr
 
 ## Query Geo-Distributed Cluster
 
-The Profile and Messaging services use the same geo-distributed cluster comprised of five nodes by default. See the `Geo Distributed Cluster` task in the `.gitpod.yml` file.
+The Profile and Messaging services use the same geo-distributed cluster comprised of three nodes. Each node is placed in a different cloud region. See the `Geo Distributed Cluster` task in the `.gitpod.yml` file for details.
 
-Navigate to the `Geo Cluster Shell; ysqlsh` terminal tab that is opened automatically and execute queries from the following sections.
+Navigate to the `Cluster#1 Shell: ysqlsh` terminal tab that is opened automatically and execute queries from the following sections.
+
+### Load Sample Data
+
+Create the schema for the Profile and Messaging microservice as well as cloud-region specific tablespaces:
+```sql
+\i /workspace/corporate-messenger/data/profile_service_schema.sql
+\i /workspace/corporate-messenger/data/messaging_service_schema.sql
+```
 
 ### Task 1: Geo-Based Data Distribution
 
