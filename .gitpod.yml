@@ -47,7 +47,7 @@ tasks:
       PRIMARY_CLUSTER_UUID: primary_cluster
       REPLICA_CLUSTER_UUID: read_replica  
     command: |
-      gp sync-await geo-distributed-cluster-ready
+      # gp sync-await geo-distributed-cluster-ready
        
       yb-master --master_addresses $PRIMARY_NODE_IP:7100 --rpc_bind_addresses $PRIMARY_NODE_IP:7100 --fs_data_dirs $STORE/ybd4
 
