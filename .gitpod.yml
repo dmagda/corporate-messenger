@@ -49,7 +49,7 @@ tasks:
     command: |
       # gp sync-await geo-distributed-cluster-ready
        
-      yb-master --master_addresses $PRIMARY_NODE_IP:7100 --rpc_bind_addresses $PRIMARY_NODE_IP:7100 --fs_data_dirs $STORE/ybd4 &
+      yb-master --rpc_bind_addresses $PRIMARY_NODE_IP:7100 --fs_data_dirs $STORE/ybd4 --enable_ysql &
 
       yb-admin -master_addresses $PRIMARY_NODE_IP:7100 modify_placement_info aws.us-west-1.us-west-1a 1 $PRIMARY_CLUSTER_UUID
 
@@ -57,15 +57,18 @@ tasks:
         add_read_replica_placement_info aws.eu-west-1.eu-west-1a:1,aws.ap-south-1.ap-south-1a:1 2 $REPLICA_CLUSTER_UUID
 
       yb-tserver --tserver_master_addrs $PRIMARY_NODE_IP:7100 --rpc_bind_addresses $PRIMARY_NODE_IP:9100 \
-        --start_pgsql_proxy --pgsql_proxy_bind_address $PRIMARY_NODE_IP:5433 --cql_proxy_bind_address $PRIMARY_NODE_IP:9042 \
+        --pgsql_proxy_bind_address $PRIMARY_NODE_IP:5433 --cql_proxy_bind_address $PRIMARY_NODE_IP:9042 \
+        --webserver_interface $PRIMARY_NODE_IP \
         --fs_data_dirs $STORE/ybd4 --placement_cloud aws --placement_region us-west-1 --placement_zone us-west-1a --placement_uuid $PRIMARY_CLUSTER_UUID &
 
       yb-tserver --tserver_master_addrs $PRIMARY_NODE_IP:7100 --rpc_bind_addresses $EU_REPLICA_NODE_IP:9100 \
-        --start_pgsql_proxy --pgsql_proxy_bind_address $EU_REPLICA_NODE_IP:5433 --cql_proxy_bind_address $EU_REPLICA_NODE_IP:9042 \
+        --pgsql_proxy_bind_address $EU_REPLICA_NODE_IP:5433 --cql_proxy_bind_address $EU_REPLICA_NODE_IP:9042 \
+        --webserver_interface $EU_REPLICA_NODE_IP \
         --fs_data_dirs $STORE/ybd5 --placement_cloud aws --placement_region eu-west-1 --placement_zone eu-west-1a --placement_uuid $REPLICA_CLUSTER_UUID &
 
       yb-tserver --tserver_master_addrs $PRIMARY_NODE_IP:7100 --rpc_bind_addresses $AP_REPLICA_NODE_IP:9100 \
-        --start_pgsql_proxy --pgsql_proxy_bind_address $AP_REPLICA_NODE_IP:5433 --cql_proxy_bind_address $AP_REPLICA_NODE_IP:9042 \
+        --pgsql_proxy_bind_address $AP_REPLICA_NODE_IP:5433 --cql_proxy_bind_address $AP_REPLICA_NODE_IP:9042 \
+        --webserver_interface $AP_REPLICA_NODE_IP \
         --fs_data_dirs $STORE/ybd6 --placement_cloud aws --placement_region ap-south-1 --placement_zone ap-south-1a --placement_uuid $REPLICA_CLUSTER_UUID &
     
       gp sync-done cluster-with-read-replicas-ready
