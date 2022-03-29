@@ -186,3 +186,5 @@ Check the cluster config:
 ```shell
 curl -s http://127.0.0.10:7000/cluster-config
 ```
+
+yb-master --master_addresses 127.0.0.4:7100 --rpc_bind_addresses 127.0.0.4:7100 --fs_data_dirs /var/ybdp/ybd4 &
