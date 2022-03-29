@@ -85,7 +85,7 @@ CREATE TABLE Channel_Asia
 
 CREATE TABLE Message_Americas
     PARTITION OF Message
-    FOR VALUES IN ('USA', 'Canada', 'Mexico') TABLESPACE americas_tablespace;
+    FOR VALUES IN ('Canada', 'USA', 'Mexico') TABLESPACE americas_tablespace;
 
 CREATE TABLE Message_Europe
     PARTITION OF Message

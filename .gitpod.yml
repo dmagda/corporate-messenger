@@ -43,7 +43,7 @@ tasks:
 
   - name: Cluster#2 (Read Replicas)
     env: 
-      PRIMARY_US_REGION_NODE_PLACEMENT_INFO: "placement_cloud=aws,placement_region=us-west-1,placement_zone=us-west-1a"
+      PRIMARY_US_REGION_NODE_PLACEMENT_INFO: "placement_cloud=aws,placement_region=us-west-1,placement_zone=us-west-1a,placement_uuid=primary_cluster"
       READ_REPLICA_EU_NODE_PLACEMENT_INFO: "placement_cloud=aws,placement_region=eu-west-1,placement_zone=eu-west-1a,placement_uuid=read_replica"
       READ_REPLICA_AP_NODE_PLACEMENT_INFO: "placement_cloud=aws,placement_region=ap-south-1,placement_zone=ap-south-1a,placement_uuid=read_replica"
       PRIMARY_CLUSTER_MODIFY_PLACEMENT_INFO_STRING: aws.us-west-1.us-west-1a
@@ -57,12 +57,12 @@ tasks:
 
       # Changing the placement info:
       yb-admin -master_addresses 127.0.0.4:7100 \
-        modify_placement_info $PRIMARY_CLUSTER_MODIFY_PLACEMENT_INFO_STRING $REPLICATION_FACTOR
+        modify_placement_info $PRIMARY_CLUSTER_MODIFY_PLACEMENT_INFO_STRING $REPLICATION_FACTOR primary_cluster
 
       # Adding two read-replica nodes for different regions:
-      yugabyted start --base_dir=$STORE/ybd5 --listen=127.0.0.5 --join=127.0.0.4 \
+      yugabyted start --base_dir=$STORE/ybd5 --listen=127.0.0.5 \
         --tserver_flags=$READ_REPLICA_EU_NODE_PLACEMENT_INFO --master_flags=$READ_REPLICA_EU_NODE_PLACEMENT_INFO
-      yugabyted start --base_dir=$STORE/ybd6 --listen=127.0.0.6 --join=127.0.0.4 \
+      yugabyted start --base_dir=$STORE/ybd6 --listen=127.0.0.6 \
         --tserver_flags=$READ_REPLICA_AP_NODE_PLACEMENT_INFO --master_flags=$READ_REPLICA_AP_NODE_PLACEMENT_INFO
 
       yb-admin -master_addresses 127.0.0.4:7100 \
