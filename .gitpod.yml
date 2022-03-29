@@ -36,8 +36,8 @@ tasks:
   - name: Cluster#1 Shell
     command: |
       gp sync-await geo-distributed-cluster-ready
-      # ysqlsh -f /workspace/corporate-messenger/data/profile_service_schema.sql
-      # ysqlsh -f /workspace/corporate-messenger/data/messaging_service_schema.sql
+      ysqlsh -f /workspace/corporate-messenger/data/profile_service_schema.sql
+      ysqlsh -f /workspace/corporate-messenger/data/messaging_service_schema.sql
       ysqlsh -h 127.0.0.1
     openMode: split-right
 

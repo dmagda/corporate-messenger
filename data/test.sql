@@ -36,3 +36,5 @@ CREATE TABLE Message_Europe
 CREATE TABLE Message_Asia
     PARTITION OF Message
     FOR VALUES IN ('India', 'China', 'Japan', 'Australia') TABLESPACE asia_tablespace;  
+
+insert into message VALUES(1,1,1,'bla bla bla', now(), 'USA');
