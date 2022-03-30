@@ -11,7 +11,7 @@ tasks:
     command: npm run dev
     openMode: split-right 
 
-  - name: Cluster#1 (Geo-Distributed)
+  - name: Deployment#1 (Geo-Distributed)
     env: 
       US_REGION_NODE_PLACEMENT_INFO: "placement_cloud=aws,placement_region=us-west-1,placement_zone=us-west-1a"
       EU_REGION_NODE_PLACEMENT_INFO: "placement_cloud=aws,placement_region=eu-west-1,placement_zone=eu-west-1a"
@@ -33,13 +33,7 @@ tasks:
 
       gp sync-done geo-distributed-cluster-ready
 
-  - name: Cluster#1 Shell
-    command: |
-      gp sync-await geo-distributed-cluster-ready
-      ysqlsh -h 127.0.0.1
-    openMode: split-right
-
-  - name: Cluster#2 (Read Replicas)
+  - name: Deployment#2 (Read Replicas)
     env: 
       PRIMARY_NODE_IP: 127.0.0.4
       EU_REPLICA_NODE_IP: 127.0.0.5
@@ -76,7 +70,30 @@ tasks:
         --pgsql_proxy_bind_address $AP_REPLICA_NODE_IP:5433 --cql_proxy_bind_address $AP_REPLICA_NODE_IP:9042 \
         --webserver_interface $AP_REPLICA_NODE_IP \
         --fs_data_dirs $STORE/ybd6 --placement_cloud aws --placement_region ap-south-1 --placement_zone ap-south-1a --placement_uuid $REPLICA_CLUSTER_UUID &
+
+      gp sync-done read-replicas-ready  
     openMode: split-right  
+
+  - name: Deployment#3 (xCluster Replication)
+    env: 
+      US_REGION_NODE_PLACEMENT_INFO: "placement_cloud=aws,placement_region=us-west-1,placement_zone=us-west-1a"
+      EU_REGION_NODE_PLACEMENT_INFO: "placement_cloud=aws,placement_region=eu-west-1,placement_zone=eu-west-1a"
+      MODIFY_PLACEMENT_STRING: aws.us-west-1.us-west-1a,aws.eu-west-1.eu-west-1a,aws.ap-south-1.ap-south-1a
+      REPLICATION_FACTOR: 1   
+    command: |
+      gp sync-await read-replicas-ready
+
+      yugabyted start --base_dir=$STORE/ybd7 --listen=127.0.0.7 \
+        --tserver_flags=$US_REGION_NODE_PLACEMENT_INFO --master_flags=$US_REGION_NODE_PLACEMENT_INFO
+      
+      yb-admin -master_addresses 127.0.0.7:7100 \
+        modify_placement_info aws.us-west-1.us-west-1a $REPLICATION_FACTOR
+
+      yugabyted start --base_dir=$STORE/ybd8 --listen=127.0.0.8 \
+        --tserver_flags=$EU_REGION_NODE_PLACEMENT_INFO --master_flags=$EU_REGION_NODE_PLACEMENT_INFO
+
+      yb-admin -master_addresses 127.0.0.8:7100 \
+        modify_placement_info aws.eu-west-1.eu-west-1a $REPLICATION_FACTOR
 
 ports:
   - port: 3000
