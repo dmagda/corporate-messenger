@@ -8,9 +8,9 @@ Multi-region deployments of distributed databases are becoming commonplace. Ther
 
 - [Geo-Distributed Corporate Messenger With YugabyteDB](#geo-distributed-corporate-messenger-with-yugabytedb)
   - [Application Architecture](#application-architecture)
-  - [Profile and Messaging Service: Geo-Distributed Cluster](#profile-and-messaging-service:-geo-distributed-cluster)
-  - [Reminders Service: Read Replica Clusters](#reminders-service:-read-replica-clusters)
-  - [Status Service: xCluster Replication](#status-service:-xcluster-replication)
+  - [Profile and Messaging Service: Geo-Distributed Cluster](#profile-and-messaging-service-geo-distributed-cluster)
+  - [Reminders Service: Read Replica Clusters](#reminders-service-read-replica-clusters)
+  - [Status Service: xCluster Replication](#status-service-xcluster-replication)
 
 <!-- vscode-markdown-toc-config
     numbering=false
@@ -37,8 +37,7 @@ The corporate messenger consists of the following microservices:
             <td>The microservice stores and manages user profiles.</td>
             <td>Tier 1</td>
             <td>
-                The service uses a [geo-distributed cluster](https://docs.yugabyte.com/latest/explore/multi-region-deployments/row-level-geo-partitioning/) 
-                across multiple regions. User data is stored in a region the user's country belongs to - for instance, data from France or Italy will
+              The service uses a <a href="https://docs.yugabyte.com/latest/explore/multi-region-deployments/row-level-geo-partitioning/">geo-distributed cluster</a> across multiple regions. User data is stored in a region the user's country belongs to - for instance, data from France or Italy will
                 be stored in and served from an European region.
             </td>
         </tr>
@@ -61,7 +60,7 @@ The corporate messenger consists of the following microservices:
             </td>
             <td>Tier 2</td>
             <td>
-                There is a primary cluster in one region and [read replicas](https://docs.yugabyte.com/latest/deploy/multi-dc/read-replica-clusters/#root) in other regions.
+                There is a primary cluster in one region and <a href="https://docs.yugabyte.com/latest/deploy/multi-dc/read-replica-clusters/#root">read replicas</a> in other regions.
                 All writes are served by the primary cluster while reads can be served from the closest region (primary or read-replica).
             </td>
         </tr>
@@ -73,7 +72,7 @@ The corporate messenger consists of the following microservices:
             </td>
             <td>Tier 3</td>
             <td>
-                Standalone clusters in different regions with [bi-directional async replication](https://docs.yugabyte.com/latest/deploy/multi-dc/async-replication/).
+                Standalone clusters in different regions with <a href="https://docs.yugabyte.com/latest/deploy/multi-dc/async-replication/">bi-directional async replication</a>.
                 A user changes the status in a cluster with the closest region and then the status gets replicated to other clusters in remote regions.
             </td>
         </tr>
