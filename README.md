@@ -67,6 +67,7 @@ Navigate to the `Cluster#1 Shell: ysqlsh` terminal tab that is opened automatica
 
 Create the schema for the Profile and Messaging microservice as well as cloud-region specific tablespaces:
 ```sql
+\i /workspace/corporate-messenger/data/geo_tablespaces.sql
 \i /workspace/corporate-messenger/data/profile_service_schema.sql
 \i /workspace/corporate-messenger/data/messaging_service_schema.sql
 ```
@@ -216,3 +217,44 @@ curl -s http://127.0.0.10:7000/cluster-config
 ```
 
 yb-master --master_addresses 127.0.0.4:7100 --rpc_bind_addresses 127.0.0.4:7100 --fs_data_dirs /var/ybdp/ybd4 &
+
+## xCluster Replication
+
+### Enable replication from Cluster#1 to Cluster#2
+
+1. Open a terminal window and connect to the first single-node cluster:
+    ```shell
+    ysqlsh -h 127.0.0.7
+    ```
+2. Load the Status service's schema:
+    ```shell
+    \i /workspace/corporate-messenger/data/status_service_schema.sql
+    ```    
+
+3. Exit `ysqlsh`
+
+4. Find the Status table's ID:
+    ```shell
+    yb-admin -master_addresses 127.0.0.7:7100 list_tables include_table_id | grep status
+    ```
+
+5. Find the Universe UUID:
+    * Open the `Deployment#3 (xCluster replication)` terminal tab
+    * Find the `Universe UUID` value in the `yugabyted` status table for node `127.0.0.7` 
+
+6. Set up the replication to the target (`127.0.0.8`) cluster:
+    ```shell
+    yb-admin -master_addresses <target_universe_master_addesses> \
+        setup_universe_replication <source_universe_uuid> \
+        <source_universe_master_addresses> \
+        <status_table_id>
+    ```
+
+    As an example, a final command can look as follows:
+
+    ```shell
+    yb-admin -master_addresses 127.0.0.8:7100 \
+        setup_universe_replication 2072dbcb-7ce1-411a-a4ea-8a4cda4456e2 \
+        127.0.0.7:7100 \
+        000033e100003000800000000000400b
+    ```
