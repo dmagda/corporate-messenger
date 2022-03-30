@@ -10,24 +10,26 @@ const config: ClientConfig = {
     password: 'yugabyte',
 };
 
-type Account = {
-    name: string,
-    age: number,
-    country: string,
-    balance: number
+type Message = {
+    id: number,
+    channel_id: number,
+    sender_id: number,
+    message: string,
+    sent_at: Date,
+    country: string
 }
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Account[] | string>
+  res: NextApiResponse<Message[] | string>
 ) {
   // open connection to the local YugabyteDB node
   const client = new Client(config);
   await client.connect();
 
   // query all Accounts stored in YugabyteDB
-  await client.query('SELECT name, age, country, balance FROM Account', 
-    (err: Error, result: QueryResult<Account>) => {
+  await client.query('SELECT * FROM Message', 
+    (err: Error, result: QueryResult<Message>) => {
         if (err)
           res.status(500).json(err.message)
 

@@ -86,7 +86,7 @@ The service tiers definition:
 
 ## Profile and Messaging Service: Geo-Distributed Cluster
 
-The Profile and Messaging services use the same geo-distributed cluster comprised of multiple nodes. Each node is placed in a different cloud region - America, Europe and Asia/Pacific. See the `Deployment#1 (Geo-Distributed)` task in the `.gitpod.yml` file.
+The Profile and Messaging services use the same geo-distributed cluster comprised of multiple nodes. Each node is placed in a different cloud region - America, Europe and Asia/Pacific (see the `Deployment#1 (Geo-Distributed)` section in the `.gitpod.yml` file). See the `Deployment#1 (Geo-Distributed)` task in the `.gitpod.yml` file.
 
 In a terminal, execute the command below to see the nodes placement across the regions:
 ```shell
@@ -99,6 +99,7 @@ Follow the steps below to experience the multi-region [geo-distributed](https://
 
 Create the schema for the Profile and Messaging microservice as well as cloud region specific tablespaces:
 ```sql
+ysqlsh -h 127.0.0.1
 \i /workspace/corporate-messenger/data/geo_tablespaces.sql
 \i /workspace/corporate-messenger/data/profile_service_schema.sql
 \i /workspace/corporate-messenger/data/messaging_service_schema.sql
@@ -214,7 +215,7 @@ Send a few messages to the 'apache_kafka_support' channel and read them back:
 
 ## Reminders Service: Read Replica Clusters
 
-The Reminders service uses a primary cluster deployed in one region and several read replica clusters in other regions. Whenever a user requests to create or update a reminder, the service goes to the primary cluster that serves all the write regardless of the user's location. But reads can be served from a read replica region that is closes to the user:
+The Reminders service uses a primary cluster deployed in one region and several read replica clusters in other regions (see the `Deployment#2 (Read Replica)` section in the `.gitpod.yml` file). Whenever a user requests to create or update a reminder, the service goes to the primary cluster that serves all the write regardless of the user's location. But reads can be served from a read replica region that is closes to the user:
 
 * The primary cluster is deployed in the US region - `us-west-1`.
 * The read replica nodes are located in Europe (`eu-west-1`) and Asia/Pacific (`ap-south-1`).
@@ -277,9 +278,9 @@ Next, follow the steps below to test the read replica type deployment:
 
 ## Status Service: xCluster Replication
 
-The Status service uses two separate clusters with each deployed in a unique cloud region:
+The Status service uses two separate clusters with each deployed in a unique cloud region (see the `Deployment#3 (xCluster Replication)` section in the `.gitpod.yml` file):
 
-* The first single-node cluster with node `127.0.0.7` is located in the USA region - `us-west-1` (see the `.gitpod.yml`)
+* The first single-node cluster with node `127.0.0.7` is located in the USA region - `us-west-1`
 * The second single-node cluster with node `127.0.0.8` is in Europe - `eu-west-1`
 * There is a [bi-directional asynchronous replication](https://docs.yugabyte.com/latest/deploy/multi-dc/async-replication/) between the clusters.
 
@@ -330,7 +331,7 @@ Follow the steps below to finish the replication set up and to test the replicat
 
     ```shell
     yb-admin -master_addresses 127.0.0.8:7100 \
-        setup_universe_replication 9eba1fe2-ab90-43a4-b100-21e2e0ee1623 \
+        setup_universe_replication a65775d0-4e56-4a20-9dbd-88ecf52022b3 \
         127.0.0.7:7100 \
         000033e100003000800000000000400b
     ```
@@ -344,7 +345,7 @@ Follow the steps below to finish the replication set up and to test the replicat
 
     ```shell
     yb-admin -master_addresses 127.0.0.7:7100 \
-        setup_universe_replication d03de09f-29e0-4fa1-bb2a-216c70c48edd  \
+        setup_universe_replication f4c36279-1575-400f-834e-5ad1b465caea   \
         127.0.0.8:7100 \
         000033e100003000800000000000400b
     ```
