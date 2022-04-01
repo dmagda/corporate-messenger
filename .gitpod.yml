@@ -72,7 +72,6 @@ tasks:
         --fs_data_dirs $STORE/ybd6 --placement_cloud aws --placement_region ap-south-1 --placement_zone ap-south-1a --placement_uuid $REPLICA_CLUSTER_UUID &
 
       gp sync-done read-replicas-ready  
-    openMode: split-right  
 
   - name: Deployment#3 (xCluster Replication)
     env: 
