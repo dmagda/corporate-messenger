@@ -36,6 +36,7 @@ tasks:
   - name: ysqlsh session
     command: |
       gp sync-await geo-distributed-cluster-ready
+      ysqlsh -f /workspace/corporate-messenger/data/geo_tablespaces.sql
       ysqlsh -f /workspace/corporate-messenger/data/profile_service_schema.sql
       ysqlsh -f /workspace/corporate-messenger/data/messaging_service_schema.sql
       ysqlsh -h 127.0.0.1
